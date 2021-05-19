@@ -13,6 +13,20 @@ router.post('/users', async (req, res)=>{
     }
 })
 
+router.post('/users/login', async (req,res)=>{
+    try{
+        const user = await User.findByCredentials(req.body.email, req.body.password)
+        
+        if(!user){
+            return res.status(404).send()
+        }
+
+        res.send(user)
+    }catch(e){
+        res.status(400).send(e)
+    }
+})
+
 router.get('/users', (req,res)=>{
     User.find({}).then((users)=>{
         res.send(users) 
@@ -50,7 +64,13 @@ router.patch('/users/:id', async (req,res)=>{
     }
 
     try{
-        const user = await User.findByIdAndUpdate(_id, req.body, {new: true, runValidators: true})
+        const user = await User.findById(_id)
+
+        updates.forEach((update)=>{
+            user[update] = req.body[update] //dynamically assigning the values coz update can be name, password, anything, thats why we cant use the req.body.name or something 
+        })
+
+        await user.save()
 
         if(!user){
             return res.status(404).send()

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const bcrypt = require('bcryptjs')
 
-const User = mongoose.model('Users',{
+const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -10,6 +11,7 @@ const User = mongoose.model('Users',{
     email:{
         type: String,
         trim: true,
+        unique: true,
         required: true,
         validate(value){
             if(!validator.isEmail(value)){
@@ -34,5 +36,37 @@ const User = mongoose.model('Users',{
         default: 0
     }
 })
+
+userSchema.statics.findByCredentials = async (email, password)=>{
+    const user =  await User.findOne({email:email})
+
+    if(!user){
+        console.log('No user')
+        throw new Error("No such user")
+    }
+
+    const isValid = await bcrypt.compare(password, user.password)
+
+    if(!isValid){
+        throw new Error("Login failed")
+    }
+
+    return user
+}
+
+userSchema.pre('save', async function(next){
+    const user = this
+
+    if(user.isModified('password')){ //to check if the password fieild was modified. Advantage of mongoose
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+
+    next()
+})
+
+const User = mongoose.model('Users', userSchema)
+
+
+
 
 module.exports = User
