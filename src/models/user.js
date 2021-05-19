@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -8,7 +9,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    email:{
+    email: {
         type: String,
         trim: true,
         unique: true,
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    password:{
+    password: {
         type: String,
         required: true,
         trim: true,
@@ -31,17 +32,33 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    age:{
+    age: {
         type: Number,
         default: 0
-    }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 })
+
+userSchema.methods.generateUserToken = async function(){
+    const user = this
+    const token = jwt.sign({_id: user._id.toString()}, 'jwtsecretkey')
+
+    user.tokens.push({ token })
+
+    await user.save()
+
+    return token
+}
 
 userSchema.statics.findByCredentials = async (email, password)=>{
     const user =  await User.findOne({email:email})
 
     if(!user){
-        console.log('No user')
         throw new Error("No such user")
     }
 
