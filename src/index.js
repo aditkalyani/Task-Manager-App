@@ -13,7 +13,6 @@ const taskRoute = require('./routers/task')
 const port = process.env.port || 3000
 
 app.use(express.json()) //parses incoming json request to object
-
 app.use(userRoute)
 app.use(taskRoute)
 

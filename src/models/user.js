@@ -74,7 +74,7 @@ userSchema.statics.findByCredentials = async (email, password)=>{
 userSchema.pre('save', async function(next){
     const user = this
 
-    if(user.isModified('password')){ //to check if the password fieild was modified. Advantage of mongoose
+    if(user.isModified('password')){ //to check if the password field was modified. Advantage of mongoose
         user.password = await bcrypt.hash(user.password, 8)
     }
 

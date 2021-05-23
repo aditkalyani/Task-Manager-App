@@ -1,16 +1,16 @@
 const express = require('express')
 const User = require('../models/user')
 const router = new express.Router()
+const auth = require('../middleware/auth')
 
 router.post('/users', async (req, res)=>{
     const user = new User(req.body)
     
-
     try {
-        const token = await user.generateUserToken()
-        user.tokens.concat({ token })
+        //Here the token is generated and pushed in the token array in the generateUserToken() function
+        const token = await user.generateUserToken()  
 
-        await user.save()
+        await user.save() //password hashing logic would be handled here
         res.status(201).send(user)
     }catch(e){
         res.status(400).send(e)
@@ -28,12 +28,8 @@ router.post('/users/login', async (req,res)=>{
     }
 })
 
-router.get('/users', (req,res)=>{
-    User.find({}).then((users)=>{
-        res.send(users) 
-    }).catch(()=>{
-        res.status(500).send()
-    })
+router.get('/users/me', auth, (req,res)=>{
+    res.send(req.user)
 })
 
 //get user by id
