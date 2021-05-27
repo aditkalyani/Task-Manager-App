@@ -9,6 +9,12 @@ const Tasks = mongoose.model('Tasks', {
     completed: {
         type: Boolean,
         default: false,
+    },
+    //saving the user who created it
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Users' //Users is basically the name of the document whcih we are referring
     }
 })
 
